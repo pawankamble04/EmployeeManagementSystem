@@ -6,7 +6,9 @@ Backend API for employee CRUD with validation, JWT authentication, and role-base
 - Employee CRUD APIs
 - Request validation (`@Valid`) for create/update payloads
 - Global structured error responses (404, 400 validation, 401, 500)
+- Duplicate protection for `username` and `email` (`409 Conflict`)
 - JWT login endpoint (`/auth/login`)
+- Swagger UI for testing APIs in browser
 - Role-based authorization:
   - `ADMIN`: full access
   - `HR`: create/update/read
@@ -23,6 +25,7 @@ Backend API for employee CRUD with validation, JWT authentication, and role-base
 - JWT (`jjwt`)
 - MySQL (default runtime profile)
 - H2 (local/test profile)
+- Swagger/OpenAPI (springdoc)
 - Gradle
 
 ## Project Layout
@@ -50,6 +53,16 @@ $env:DB_PASSWORD="your_password"
 cd employeemanagement
 .\gradlew.bat bootRun
 ```
+
+## Use Without Frontend
+This project currently has no React UI in this repo snapshot, but you can fully use it from browser/API tools:
+
+- Swagger UI: `http://localhost:8081/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+- H2 Console (local profile): `http://localhost:8081/h2-console`
+  - JDBC URL: `jdbc:h2:mem:localdb`
+  - Username: `sa`
+  - Password: (leave empty)
 
 ## Default Auth Users
 Credentials are configurable via env vars. Default values:

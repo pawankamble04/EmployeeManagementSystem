@@ -1,6 +1,7 @@
 package com.saadbaig.fullstackbackend.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -48,6 +49,27 @@ public class UserNotFoundAdvice {
         return buildErrorResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Invalid username or password",
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(UserConflictException.class)
+    public ResponseEntity<ApiError> handleConflictException(UserConflictException exception,
+                                                            HttpServletRequest request) {
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolationException(HttpServletRequest request) {
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                "Username or email already exists",
                 request.getRequestURI(),
                 Map.of()
         );

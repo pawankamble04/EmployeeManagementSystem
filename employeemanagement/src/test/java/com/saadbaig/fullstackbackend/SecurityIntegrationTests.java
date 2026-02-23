@@ -2,6 +2,8 @@ package com.saadbaig.fullstackbackend;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.saadbaig.fullstackbackend.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +28,14 @@ class SecurityIntegrationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void clearUsers() {
+        userRepository.deleteAll();
+    }
+
     @Test
     void loginReturnsJwtToken() throws Exception {
         mockMvc.perform(post("/auth/login")
@@ -48,6 +58,37 @@ class SecurityIntegrationTests {
         mockMvc.perform(get("/users")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void createUserWithDuplicateUsernameReturnsConflict() throws Exception {
+        String token = fetchAccessToken("admin", "admin123");
+
+        mockMvc.perform(post("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content("""
+                                {
+                                  "username": "john01",
+                                  "name": "John Doe",
+                                  "email": "john01@example.com"
+                                }
+                                """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content("""
+                                {
+                                  "username": "john01",
+                                  "name": "John Updated",
+                                  "email": "john02@example.com"
+                                }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("Username already exists: john01"));
     }
 
     private String fetchAccessToken(String username, String password) throws Exception {

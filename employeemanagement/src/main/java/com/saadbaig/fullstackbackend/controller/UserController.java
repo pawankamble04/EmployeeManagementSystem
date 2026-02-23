@@ -24,6 +24,7 @@ public class UserController {
     @PostMapping("/user")
     @PreAuthorize("hasAnyRole('ADMIN', 'HR')")
     public ResponseEntity<User> newUser(@Valid @RequestBody UserRequest request) {
+        validateUniqueFields(request.username(), request.email(), null);
         User user = new User();
         user.setUsername(request.username());
         user.setName(request.name());
@@ -49,6 +50,7 @@ public class UserController {
     public User updateUser(@Valid @RequestBody UserRequest request, @PathVariable Long id) {
         return userRepository.findById(id)
                 .map(user -> {
+                    validateUniqueFields(request.username(), request.email(), id);
                     user.setUsername(request.username());
                     user.setName(request.name());
                     user.setEmail(request.email());
@@ -64,5 +66,21 @@ public class UserController {
         }
         userRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "User with id " + id + " deleted successfully"));
+    }
+
+    private void validateUniqueFields(String username, String email, Long currentUserId) {
+        boolean usernameExists = currentUserId == null
+                ? userRepository.existsByUsernameIgnoreCase(username)
+                : userRepository.existsByUsernameIgnoreCaseAndIdNot(username, currentUserId);
+        if (usernameExists) {
+            throw new UserConflictException("Username already exists: " + username);
+        }
+
+        boolean emailExists = currentUserId == null
+                ? userRepository.existsByEmailIgnoreCase(email)
+                : userRepository.existsByEmailIgnoreCaseAndIdNot(email, currentUserId);
+        if (emailExists) {
+            throw new UserConflictException("Email already exists: " + email);
+        }
     }
 }

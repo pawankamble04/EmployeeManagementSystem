@@ -5,19 +5,26 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "employees")
+@Table(
+        name = "employees",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_employees_username", columnNames = "username"),
+                @UniqueConstraint(name = "uk_employees_email", columnNames = "email")
+        }
+)
 public class User {
 
     @Id
     @GeneratedValue
     private Long id;
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String username;
     @Column(nullable = false, length = 100)
     private String name;
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 255, unique = true)
     private String email;
 
     public Long getId() {
