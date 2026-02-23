@@ -1,70 +1,95 @@
-# Employee Management System – Spring Boot & React
+# Employee Management System (Spring Boot)
 
-A full-stack Employee Management System built using Spring Boot for the backend and React for the frontend.  
-The application provides RESTful APIs to perform CRUD operations on employee data and integrates with a React UI.
+Backend API for employee CRUD with validation, JWT authentication, and role-based authorization.
 
----
+## Features
+- Employee CRUD APIs
+- Request validation (`@Valid`) for create/update payloads
+- Global structured error responses (404, 400 validation, 401, 500)
+- JWT login endpoint (`/auth/login`)
+- Role-based authorization:
+  - `ADMIN`: full access
+  - `HR`: create/update/read
+  - `EMPLOYEE`: read-only
+- Environment-based configuration
+- Test profile using in-memory H2 database (no MySQL required for tests)
 
-## 📌 Brief Summary
-- Developed a RESTful backend using Spring Boot and MySQL.
-- Implemented CRUD operations (Create, Read, Update, Delete) for employee management.
-- Integrated backend APIs with a React frontend using Axios.
-- Tested all APIs using Postman.
-- Designed with clean architecture using Spring Data JPA and exception handling.
-
----
-
-## 🎯 Objectives
-- To build a real-world full-stack Java application.
-- To understand REST API development using Spring Boot.
-- To gain hands-on experience with database integration and frontend-backend communication.
-- To follow industry-standard backend practices.
-
----
-
-## 🧰 Tech Stack
-
-### Backend
-- Java
-- Spring Boot
+## Tech Stack
+- Java 17
+- Spring Boot 3
+- Spring Web
 - Spring Data JPA
-- MySQL
-- REST APIs
+- Spring Security
+- JWT (`jjwt`)
+- MySQL (default runtime profile)
+- H2 (local/test profile)
+- Gradle
 
-### Frontend
-- React.js
-- Axios
-- Bootstrap
+## Project Layout
+- Backend: `employeemanagement`
+- Frontend folder exists: `fullstack-front` (currently empty in this repo snapshot)
 
-### Tools
-- Postman
-- MySQL Workbench
-- VS Code / Eclipse
+## Installation and Run
 
----
+### 1. Prerequisites
+- JDK 17+
+- No manual Gradle install needed (wrapper is included)
 
-## ⚙️ Backend Design
-- Used Spring Boot to create RESTful APIs.
-- Implemented JPA entities using `@Entity`, `@Id`, and `@GeneratedValue`.
-- Handled exceptions using custom exception classes.
-- Configured MySQL database connectivity.
-- Followed layered architecture (Controller, Service, Repository).
+### 2. Run with local in-memory DB (no MySQL installation needed)
+```powershell
+cd employeemanagement
+.\gradlew.bat bootRun --args="--spring.profiles.active=local"
+```
 
----
+### 3. Run with MySQL (optional)
+Set environment variables, then run:
+```powershell
+$env:DB_URL="jdbc:mysql://localhost:3306/fullstack?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="your_password"
+cd employeemanagement
+.\gradlew.bat bootRun
+```
 
-## 🧪 API Testing
-- All endpoints tested using Postman.
-- Supported GET, POST, PUT, and DELETE operations.
-- JSON used for request and response handling.
+## Default Auth Users
+Credentials are configurable via env vars. Default values:
+- `admin / admin123` -> role `ADMIN`
+- `hr / hr123` -> role `HR`
+- `employee / employee123` -> role `EMPLOYEE`
 
----
+## API Security Flow
+1. Login:
+```http
+POST /auth/login
+Content-Type: application/json
 
-## 🚧 Project Status
-This project is actively being enhanced.  
-Upcoming improvements include authentication, role-based access, and validation.
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+2. Use returned token:
+```http
+Authorization: Bearer <accessToken>
+```
 
----
+## API Endpoints
+- `POST /auth/login` -> public
+- `GET /users` -> `ADMIN`, `HR`, `EMPLOYEE`
+- `GET /user/{id}` -> `ADMIN`, `HR`, `EMPLOYEE`
+- `POST /user` -> `ADMIN`, `HR`
+- `PUT /user/{id}` -> `ADMIN`, `HR`
+- `DELETE /user/{id}` -> `ADMIN`
 
-## 👨‍💻 Developed By
-**Pawan Kamble**  
-Computer Science & Engineering (2026)  
+## Testing
+Run:
+```powershell
+cd employeemanagement
+.\gradlew.bat test
+```
+Tests use `application-test.properties` with H2 in-memory DB.
+
+## Resume-Ready Highlights
+- Implemented stateless JWT authentication and role-based access control using Spring Security.
+- Added robust backend validation and centralized error handling for production-style API responses.
+- Introduced profile-based configuration for local, test, and database-backed environments.
